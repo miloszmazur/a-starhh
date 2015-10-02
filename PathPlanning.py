@@ -182,7 +182,6 @@ def remove_node(node, node_list):
 
 def astar(mmap, top = None, bot = None):
     path = []
-    experimental_path = []
     start = np.where(mmap == -2)
     goal = np.where(mmap == -3)
     step = 1
@@ -192,18 +191,16 @@ def astar(mmap, top = None, bot = None):
         curr = get_minimum_node(opened, goal, top, bot)
         curr_coordinates = (curr[0][0], curr[0][1])
         opened = remove_node(curr, opened)
-        if not node_is_in_checked(curr, checked):
-            path.append(curr)
+        if not node_is_in_list(curr, checked):
             if curr_coordinates == goal:
-                experimental_path.append(curr_coordinates)
-                experimental_path.append(curr[2]) # parent of goal
+                path.append(curr_coordinates) # goal
+                path.append(curr[2]) # parent of goal
                 pparent = find_node_in_list(curr[2], checked) # parent of parent of goal
                 while pparent != None:
-                    experimental_path.append(pparent[2])
+                    path.append(pparent[2]) # every other parent
                     pparent = find_node_in_list(pparent[2], checked)
-
-                experimental_path.pop() # get rid of the None at the end
-                return 'goal reached', path, list(reversed(experimental_path))
+                path.pop() # get rid of the None at the end
+                return 'goal reached', list(reversed(path))
             else:
                 checked.append(curr)
                 if mmap[curr_coordinates] != -2: # start
@@ -212,7 +209,7 @@ def astar(mmap, top = None, bot = None):
                 for neighbour in neighbours:
                     opened.append((neighbour, step, curr_coordinates))
         step+=1
-    return 'no solution', None, None
+    return 'no solution', None
 
 
 
@@ -232,11 +229,11 @@ def astar(mmap, top = None, bot = None):
 ##   -3 - goal point
 ##   positive_number - one of the values described in lab2 description (heuristic cost, travel cost, cell total cost,...)
 mymap, top, bot = generateMap2d_case1([40,40])
-# mymap = generateMap2d([10,10])
-print mymap
-res, path, experimental_path = astar(mymap, None, None)
+# mymap = generateMap2d([40,40])
+# print mymap
+res, path = astar(mymap, None)
 print res
 print path
 print '---------'
-print experimental_path
-plotMap(mymap, experimental_path)
+print path
+plotMap(mymap, path)
