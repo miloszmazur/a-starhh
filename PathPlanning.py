@@ -1,4 +1,5 @@
 from math import sqrt
+from enum import Enum
 
 __author__ = 'yuafan'
 
@@ -9,6 +10,10 @@ import matplotlib.pyplot as plt
 
 sizeOfMap2D = [100, 50]
 percentOfObstacle = 0.9  # 30% - 60%, random
+class Heuristics(Enum):
+    Euclidean = 1
+    Metropolitan = 2
+    Specialized = 3
 
 
 
@@ -128,29 +133,31 @@ def get_surrounding_nodes(mmap, node):
     return cells
 
 
-def get_heur_val(_from, _to, top, bot):
-    # euclidean
-    # return sqrt((_from[0] - _to[0]) * (_from[0] - _to[0]) + (_from[1] - _to[1]) * (_from[1] - _to[1]))
+def get_heur_val(_from, _to, top, bot, heuristic):
+    if heuristic == Heuristics.Euclidean:
+        return sqrt((_from[0] - _to[0]) * (_from[0] - _to[0]) + (_from[1] - _to[1]) * (_from[1] - _to[1]))
 
-    # manhattan
-    return abs(_from[0] - _to[0]) + abs(_from[1] - _to[1])
+    elif heuristic == Heuristics.Metropolitan:
+        return abs(_from[0] - _to[0]) + abs(_from[1] - _to[1])
+    elif heuristic == Heuristics.Specialized:
+        euc = sqrt((_from[0] - _to[0]) * (_from[0] - _to[0]) + (_from[1] - _to[1]) * (_from[1] - _to[1]))
+        return (abs(_from[1] - top) + abs(_to[1] / top)) / (abs(_from[1] - bot) + abs(_to[1] - bot)) * euc
+    else:
+        raise ValueError("Unsupported Heuristics Value %d", heuristic)
 
-    # specialized
-    # euc = sqrt((_from[0] - _to[0]) * (_from[0] - _to[0]) + (_from[1] - _to[1]) * (_from[1] - _to[1]))
-    # return (abs(_from[1] - top) + abs(_to[1] / top)) / (abs(_from[1] - bot) + abs(_to[1] - bot)) * euc
 
 
-
-def get_minimum_node(node_list, goal, top_border, bottom_border):
+def get_minimum_node(node_list, goal, top_border, bottom_border, heuristic):
     # returns (node, step, parent)
     const = 0.3
     res = node_list[0]
-    min_val = get_heur_val(res[0], goal, top_border, bottom_border) + node_list[0][1] * const
+    min_val = get_heur_val(_from=res[0], _to=goal, top=top_border, bot=bottom_border, heuristic=heuristic) + node_list[0][1] * const
     for entry in node_list:
         node = entry[0]
         step = entry[1]
-        if get_heur_val(node, goal, top_border, bottom_border) + step * const < min_val:
-            min_val = get_heur_val(node, goal, top_border, bottom_border)
+        fval = get_heur_val(node, goal, top_border, bottom_border, heuristic)
+        if fval + step * const < min_val:
+            min_val = fval
             res = entry
     return res
 
@@ -180,7 +187,7 @@ def remove_node(node, node_list):
     return node_list
 
 
-def astar(mmap, top = None, bot = None):
+def astar(mmap, heuristic = Heuristics.Euclidean, top = None, bot = None):
     path = []
     start = np.where(mmap == -2)
     goal = np.where(mmap == -3)
@@ -188,7 +195,7 @@ def astar(mmap, top = None, bot = None):
     opened = [(start, 0, None)]
     checked = []
     while len(opened) > 0:
-        curr = get_minimum_node(opened, goal, top, bot)
+        curr = get_minimum_node(opened, goal, top, bot, heuristic)
         curr_coordinates = (curr[0][0], curr[0][1])
         opened = remove_node(curr, opened)
         if not node_is_in_list(curr, checked):
@@ -231,7 +238,7 @@ def astar(mmap, top = None, bot = None):
 mymap, top, bot = generateMap2d_case1([40,40])
 # mymap = generateMap2d([40,40])
 # print mymap
-res, path = astar(mymap, None)
+res, path = astar(mymap, Heuristics.Specialized, top, bot)
 print res
 print '---------'
 print path
