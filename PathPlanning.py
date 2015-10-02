@@ -109,9 +109,12 @@ def plotMap(map2d_, path_):
         colorsMap2d[locExpand[0][iposExpand]][locExpand[1][iposExpand]] = colors[map2d_[locExpand[0][iposExpand]][locExpand[1][iposExpand]]-1]
 
     if path_:
+        # get rid of the start and goal in path
+        path_.pop()
+        path.pop(0)
         for point in path:
-            # colorsMap2d[point[0]][point[1]] = [.0, .0, .0, 0.5]  # black
-            plt.plot(path_[:][0],path_[:][1], color='magenta',linewidth=2.5)
+            colorsMap2d[point[0]][point[1]] = [1.0, .0, 1.0, 1.0]  # black
+            # plt.plot(path_[:][0],path_[:][1], color='magenta',linewidth=2.5)
     plt.imshow(colorsMap2d, interpolation='nearest')
     # plot the path
     plt.ylim(0,map2d_.shape[0])
