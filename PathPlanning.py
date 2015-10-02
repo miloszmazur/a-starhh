@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 sizeOfMap2D = [100, 50]
-percentOfObstacle = 0.6  # 30% - 60%, random
+percentOfObstacle = 0.9  # 30% - 60%, random
 
 
 
@@ -125,7 +125,6 @@ def get_surrounding_nodes(mmap, node):
         cells.append((node[0] -1, node[1]))
     if node[1] > 0 and mmap[node[0], node[1]-1] not in [-1, -2]:
         cells.append((node[0], node[1] -1))
-    # print 'cells', cells
     return cells
 
 
@@ -143,62 +142,77 @@ def get_heur_val(_from, _to, top, bot):
 
 
 def get_minimum_node(node_list, goal, top_border, bottom_border):
-    # this has to return the whole package: (node, step, parent)
+    # returns (node, step, parent)
     const = 0.3
-    res = node_list[0][0]
-    min_val = get_heur_val(res, goal, top_border, bottom_border) + node_list[0][1] * const
+    res = node_list[0]
+    min_val = get_heur_val(res[0], goal, top_border, bottom_border) + node_list[0][1] * const
     for entry in node_list:
         node = entry[0]
         step = entry[1]
         if get_heur_val(node, goal, top_border, bottom_border) + step * const < min_val:
             min_val = get_heur_val(node, goal, top_border, bottom_border)
-            res = node
+            res = entry
     return res
 
 
-def node_is_in_checked(curr, checked):
+def node_is_in_checked(node, checked):
     # srsly.
     res = False
-    for node in checked:
-        if int(node[0]) == int(curr[0]) and int(node[1]) == int(curr[1]):   # srsly
+    for n in checked:
+        if int(node[0][0]) == int(n[0][0]) and int(node[0][1]) == int(n[0][1]):   # srsly
             res = True
     return res
 
+def find_node_in_list(node, node_list):
+    result = None
+    if node == None:
+        return None
+    for n in node_list:
+        if int(node[0]) == int(n[0][0]) and int(node[1]) == int(n[0][1]):
+            result = n
+    return result
 
-def remove_node(list, curr):
-    for n in list:
-        if n[0] == curr:
-            list.remove(n)
+def remove_node(node, node_list):
+    for n in node_list:
+        if int(node[0][0]) == int(n[0][0]) and int(node[0][1]) == int(n[0][1]):
+            node_list.remove(n)
             break
-    return list
+    return node_list
 
 
 def astar(mmap, top = None, bot = None):
     path = []
+    experimental_path = []
     start = np.where(mmap == -2)
-    print 'start', start
     goal = np.where(mmap == -3)
     step = 1
     opened = [(start, 0, None)]
     checked = []
     while len(opened) > 0:
         curr = get_minimum_node(opened, goal, top, bot)
-        print 'current', curr
-        opened = remove_node(opened, curr)
+        curr_coordinates = (curr[0][0], curr[0][1])
+        opened = remove_node(curr, opened)
         if not node_is_in_checked(curr, checked):
             path.append(curr)
-            # print path
-            if curr == goal:
-                return 'goal reached', path
+            if curr_coordinates == goal:
+                experimental_path.append(curr_coordinates)
+                experimental_path.append(curr[2]) # parent of goal
+                pparent = find_node_in_list(curr[2], checked) # parent of parent of goal
+                while pparent != None:
+                    experimental_path.append(pparent[2])
+                    pparent = find_node_in_list(pparent[2], checked)
+
+                experimental_path.pop() # get rid of the None at the end
+                return 'goal reached', path, list(reversed(experimental_path))
             else:
                 checked.append(curr)
-                if mmap[curr] != -2: # start
-                    mmap[curr] = step + get_heur_val(curr, goal, top,bot)
-                neighbours = get_surrounding_nodes(mmap, curr)
+                if mmap[curr_coordinates] != -2: # start
+                    mmap[curr_coordinates] = step # + get_heur_val(curr, goal, top,bot)
+                neighbours = get_surrounding_nodes(mmap, curr_coordinates)
                 for neighbour in neighbours:
-                    opened.append((neighbour, step, curr))
+                    opened.append((neighbour, step, curr_coordinates))
         step+=1
-    return 'no solution', None
+    return 'no solution', None, None
 
 
 
@@ -209,12 +223,7 @@ def astar(mmap, top = None, bot = None):
 ##   -2 - Start point
 ##   -3 - Goal point
 ##
-# mymap, top, bot = generateMap2d_case1([40,40])
-mymap = generateMap2d([5,5])
-print mymap
 # res, path = astar(mymap, top, bot)
-res, path = astar(mymap, None, None)
-print path
 ## Solve using your implemented A* algorithm
 ##solved_map description
 ##   0 - unexpanded cell
@@ -222,6 +231,12 @@ print path
 ##   -2 - start point
 ##   -3 - goal point
 ##   positive_number - one of the values described in lab2 description (heuristic cost, travel cost, cell total cost,...)
-# plotMap(solved_tmap,solved_path)
+mymap, top, bot = generateMap2d_case1([40,40])
+# mymap = generateMap2d([10,10])
+print mymap
+res, path, experimental_path = astar(mymap, None, None)
 print res
-plotMap(mymap, path)
+print path
+print '---------'
+print experimental_path
+plotMap(mymap, experimental_path)
