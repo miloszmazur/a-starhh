@@ -130,10 +130,10 @@ def get_surrounding_nodes(mmap, node):
 
 def get_heur_val(_from, _to, top, bot):
     # euclidean
-    return sqrt((_from[0] - _to[0]) * (_from[0] - _to[0]) + (_from[1] - _to[1]) * (_from[1] - _to[1]))
+    # return sqrt((_from[0] - _to[0]) * (_from[0] - _to[0]) + (_from[1] - _to[1]) * (_from[1] - _to[1]))
 
     # manhattan
-    # return abs(_from[0] - _to[0]) + abs(_from[1] - _to[1])
+    return abs(_from[0] - _to[0]) + abs(_from[1] - _to[1])
 
     # specialized
     # euc = sqrt((_from[0] - _to[0]) * (_from[0] - _to[0]) + (_from[1] - _to[1]) * (_from[1] - _to[1]))
@@ -155,18 +155,18 @@ def get_minimum_node(node_list, goal, top_border, bottom_border):
     return res
 
 
-def node_is_in_checked(node, checked):
+def node_is_in_list(node, list):
     # srsly.
     res = False
-    for n in checked:
+    for n in list:
         if int(node[0][0]) == int(n[0][0]) and int(node[0][1]) == int(n[0][1]):   # srsly
             res = True
     return res
 
 def find_node_in_list(node, node_list):
-    result = None
     if node == None:
         return None
+    result = None
     for n in node_list:
         if int(node[0]) == int(n[0][0]) and int(node[1]) == int(n[0][1]):
             result = n
@@ -233,7 +233,6 @@ mymap, top, bot = generateMap2d_case1([40,40])
 # print mymap
 res, path = astar(mymap, None)
 print res
-print path
 print '---------'
 print path
 plotMap(mymap, path)
