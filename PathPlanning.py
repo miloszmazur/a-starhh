@@ -116,7 +116,6 @@ def plotMap(map2d_, path_):
             colorsMap2d[point[0]][point[1]] = [1.0, .0, 1.0, 1.0]  # black
             # plt.plot(path_[:][0],path_[:][1], color='magenta',linewidth=2.5)
     plt.imshow(colorsMap2d, interpolation='nearest')
-    # plot the path
     plt.ylim(0,map2d_.shape[0])
     plt.xlim(0,map2d_.shape[1])
     plt.show()
@@ -166,10 +165,9 @@ def get_minimum_node(node_list, goal, top_border, bottom_border, heuristic):
 
 
 def node_is_in_list(node, list):
-    # srsly.
     res = False
     for n in list:
-        if int(node[0][0]) == int(n[0][0]) and int(node[0][1]) == int(n[0][1]):   # srsly
+        if int(node[0][0]) == int(n[0][0]) and int(node[0][1]) == int(n[0][1]):
             res = True
     return res
 
@@ -182,7 +180,7 @@ def find_node_in_list(node, node_list):
             result = n
     return result
 
-def remove_node(node, node_list):
+def remove_node_from_list(node, node_list):
     for n in node_list:
         if int(node[0][0]) == int(n[0][0]) and int(node[0][1]) == int(n[0][1]):
             node_list.remove(n)
@@ -230,17 +228,15 @@ def astar(mmap, heuristic = Heuristics.Euclidean, top = None, bot = None):
 ##   -2 - Start point
 ##   -3 - Goal point
 ##
-# res, path = astar(mymap, top, bot)
-## Solve using your implemented A* algorithm
 ##solved_map description
 ##   0 - unexpanded cell
 ##   -1 - obstacle
 ##   -2 - start point
 ##   -3 - goal point
 ##   positive_number - one of the values described in lab2 description (heuristic cost, travel cost, cell total cost,...)
+
 mymap, top, bot = generateMap2d_case1([40,40])
 # mymap = generateMap2d([40,40])
-# print mymap
 res, path = astar(mymap, Heuristics.Specialized, top, bot)
 print res
 print '---------'
